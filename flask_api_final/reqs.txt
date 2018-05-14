@@ -1,0 +1,9 @@
+click==6.7
+Flask==1.0
+Flask-API==1.0
+itsdangerous==0.24
+Jinja2==2.10
+MarkupSafe==1.0
+numpy==1.14.3
+pyblake2==1.1.2
+Werkzeug==0.14.1
