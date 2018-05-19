@@ -53,10 +53,10 @@ class bloom_filter:
 		"""#generate hashes
 		hashes = hash_generator(element,self.salts,self.big_prime)
 		if self.bits_vector[hashes].sum() == len(hashes):
-		    print('elemento {} ya esta en la lista'.format(element))
+		    #print('elemento {} ya esta en la lista'.format(element))
 		    return 0
 		else:
-		    print('elemento {} no esta en la lista'.format(element))
+		    #print('elemento {} no esta en la lista'.format(element))
 		    #inserción en el filtro de bloom
 		    self.bits_vector[hashes] = 1
 		    return 1
