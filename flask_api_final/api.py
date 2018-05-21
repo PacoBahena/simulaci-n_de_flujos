@@ -2,16 +2,19 @@ from flask_api import FlaskAPI
 from flask import request
 from helper_functions import *
 import psycopg2 as pg
+import sys
 
 
 app = FlaskAPI(__name__)
 
 ###
 #genera salts
-salts = hash_family()
+salts = hash_family(k=sys.argv[1])
 big_prime = 526717
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)
+#genera hyperloglog
+hloglog = hyperloglog(5,salts)
 ###
 
 ###Cońexión a postgres 
@@ -19,6 +22,7 @@ filtro_bloom = bloom_filter(salts,big_prime)
 pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos', connect_timeout=8)
 cur = pos_connection.cursor()
 cur.execute("TRUNCATE checkin")
+cur.execute("TRUNCATE flujo")
 pos_connection.commit()
 cur.close()
 
@@ -73,6 +77,39 @@ def insert_elements():
 	
 	return results
 
+
+@app.route('/check_unique/',methods=['POST'])
+def check_unique():
+
+	global pos_connection
+	#Si la conexión murió, vuelve a abrirla.
+	try:
+		cur = pos_connection.cursor()
+	except:
+	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+	 	cur = pos_connection.cursor()
+
+	records = request.data.get('records')
+
+	for record in records:
+
+		cur.execute("insert into flujo (registro) values (%s)",(record,))
+
+	pos_connection.commit()
+
+	cur.execute("select count(distinct(registro)) from flujo")
+	unicas_base = cur.fetchone()[0]
+	#
+	unicas_hll = hloglog.count()
+
+	results = {
+
+		'unicas_base': unicas_base,
+		'unicas hloglog': unicas_hll
+
+	}
+
+	return results
 
 
 if __name__ == "__main__":

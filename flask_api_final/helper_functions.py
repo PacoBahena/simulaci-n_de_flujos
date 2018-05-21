@@ -22,14 +22,20 @@ def hash_family(semilla=12345,k=100):
 	return hash_salts
 
 
-def hash_generator(elemento,salts,modulo_primo=526717):
+def hash_generator(elemento,salts,modulo_primo=526717,hyperloglog=False):
     """
     Recibe un elemento, y genera los hashes blake2b del elemento, se mapean a
     enteros y se les aplica módulo de un primo dado.
+    Si hyperloglog es True, regresa un hash binario, uno solo.
     """
     elemento = elemento.encode() 
-    hashes = [int(blake2b(elemento,salt=salt).hexdigest()[:10],16) % modulo_primo\
-    for salt in salts] 
+    
+    if hyperloglog=True:
+    	modulo_primo = 10000139
+	    hashes = format(int(blake2b(elemento,salt=salts[0]).hexdigest()[:10],16) % modulo_primo,'023b') 
+	else:
+    	hashes = [int(blake2b(elemento,salt=salt).hexdigest()[:10],16) % modulo_primo\
+	    for salt in salts]
     
     return hashes
 
@@ -62,3 +68,29 @@ class bloom_filter:
 		    return 1
         
     
+
+class hyperloglog:
+    
+    def __init__(self, lead_bits, salts):
+        self.lead_bits = lead_bits
+        self.salts = salts
+        
+    def count(self, data):
+        #salts = hash_family()
+        bins = [hash_generator(el, self.salts,hyperloglog=True) for el in data]
+        leads = [el[::-1][:self.lead_bits] for el in bins] #toma el frente de longitud lead_bits
+        tails = [el[::-1][self.lead_bits:] for el in bins] #toma el restante
+        mx = []
+        #Para cada dato.
+        for i in range(len(tails)): 
+            #Tomo la cola y la separo en lista (cada dígito)
+            t = list(tails[i])
+            #inserta en lalista la cubeta, y la longitud de la cola de ceros (leads).
+            mx.insert(i,[leads[i],t.index(max(t))])
+        #lo hacemos datafrfame.
+        mx = pd.DataFrame(mx)
+        mx.columns = ['cubeta', 'tailmax']
+        #En cada cubeta, sacó el valor maximo de la cola de ceros.
+        #De esa, sacó el promedio armonico.
+        count = 1/((1/2**mx.groupby('cubeta').tailmax.agg(lambda x: x.max()+1)).mean()) * len(mx.cubeta.unique())
+        return count
