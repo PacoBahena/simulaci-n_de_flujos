@@ -11,7 +11,7 @@ def hash_family(semilla=12345,k=100):
 	"""
 	seed(semilla)
 	hash_salts = []
-	for i in range(k):
+	for i in range(int(k)):
 		min_char = 8
 		max_char = 12
 		allchar = string.ascii_letters + string.digits
@@ -30,10 +30,10 @@ def hash_generator(elemento,salts,modulo_primo=526717,hyperloglog=False):
     """
     elemento = elemento.encode() 
     
-    if hyperloglog=True:
+    if hyperloglog == True:
     	modulo_primo = 10000139
-	    hashes = format(int(blake2b(elemento,salt=salts[0]).hexdigest()[:10],16) % modulo_primo,'023b') 
-	else:
+    	hashes = format(int(blake2b(elemento,salt=salts[0]).hexdigest()[:10],16) % modulo_primo,'023b') 
+    else:
     	hashes = [int(blake2b(elemento,salt=salt).hexdigest()[:10],16) % modulo_primo\
 	    for salt in salts]
     
