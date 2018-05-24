@@ -9,8 +9,8 @@ app = FlaskAPI(__name__)
 
 ###
 #genera salts
-salts = hash_family(k=10)
-big_prime = 526717
+salts = hash_family(k=100)
+big_prime = 9003749
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)
 #genera hyperloglog
@@ -33,15 +33,18 @@ def insert_elements_bloom_filter():
 	records = request.data.get('records')
 	#counter
 	inserted_count = 0 
-	
+	visitas_existentes_filtro = 0
+
+	global pos_connection
+
 	for visit in records:	
 		#revisa si esta en el filtro, si no, insertalo.
 		esta_en_filtro = filtro_bloom.check_element(visit)
 		
-
+		print(esta_en_filtro)
 		if esta_en_filtro == 0:
 
-			global pos_connection
+			
 			#Si la conexión murió, vuelve a abrirla.
 			try:
 				cur = pos_connection.cursor()
@@ -49,20 +52,40 @@ def insert_elements_bloom_filter():
 			 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
 			 	cur = pos_connection.cursor()
 
-			cur.execute("insert into checkin_bloom (checkin) values (%s)",(record,))
+			cur.execute("insert into checkin_bloom (checkin) values (%s)",(visit,))
 			cur.close()
 			pos_connection.commit()
 			inserted_count +=1
+		else:
+			visitas_existentes_filtro +=1
 
 	# #reportar cuantas existe, cuantas no segun base.
 	# #saca fp
 
 	nuevas_visitas_filtro = inserted_count
 	##Cuantas ya existían.
-	visitas_existentes_filtro = len(records) - inserted_count
+	
+	results = {
 
+		'macs_existentes_filtro': visitas_existentes_filtro,
+		'nuevas_visitas_filtro' : nuevas_visitas_filtro,
+
+	}
+	
+	return results
+
+
+@app.route('/insert_elements_db/',methods=['POST'])
+def insert_elements_on_db():
+
+	records = request.data.get('records')
+	
+	##Cuantas ya existían.
 	##### real database stats.
 	
+	inserted_base = 0
+	visitas_existentes_base = 0
+
 	global pos_connection
 	#Si la conexión murió, vuelve a abrirla.
 	try:
@@ -72,11 +95,10 @@ def insert_elements_bloom_filter():
 	 	cur = pos_connection.cursor()
 	
 	#inserta los records
-	visitas_existentes_base = 0
-
 	for record in records:
 		try:
 			cur.execute("insert into checkin (checkin) values (%s)",(record,))
+			inserted_base += 1
 		except pg.IntegrityError:
 			visitas_existentes_base +=1
 
@@ -86,8 +108,8 @@ def insert_elements_bloom_filter():
 	
 	results = {
 
-		'macs_existentes_filtro': visitas_existentes_filtro,
-		'nuevas_macs_filtro' : nuevas_visitas_filtro,
+		'visitas_existentes_base' : visitas_existentes_base,
+		'nuevas_visitas_base': inserted_base
 
 	}
 	
