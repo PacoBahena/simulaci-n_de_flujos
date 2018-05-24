@@ -87,7 +87,7 @@ def insert_elements_bloom_filter():
 	##Cuantas ya existían.
 
 	ts1 =time()
-	tiempo = int(ts1 - ts0)
+	tiempo = str(ts1 - ts0)
 	
 	results = {
 
@@ -135,13 +135,13 @@ def insert_elements_on_db():
 
 	ts1 =time()
 
-	tiempo = int(ts1 - ts0)
+	tiempo = str(ts1 - ts0)
 	
 	results = {
 
 		'nuevas_visitas_base': inserted_base,
 		'visitas_existentes_base' : visitas_existentes_base,
-		'tiempo':tiempo
+		'tiempo_en_segundos':tiempo
 	}
 	
 	return results
