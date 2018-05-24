@@ -28,8 +28,8 @@ cur.execute("TRUNCATE window_flujo")
 pos_connection.commit()
 cur.close()
 
-@app.route('/limpia_db_bloom/')
-def clean_db():
+@app.route('/limpia_db_bloom/<int:num_hashes>/<int:big_prime>')
+def clean_db(num_hashes):
 
 	pg_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos', connect_timeout=8)
 	cur = pg_connection.cursor()
@@ -43,7 +43,9 @@ def clean_db():
 	global filtro_bloom
 	global big_prime
 
-	filtro_bloom.bits_vector = np.zeros(big_prime)
+	salts = hash_family(k=int(num_hashes))
+	#genera vector	 de bits 
+	filtro_bloom = bloom_filter(salts,big_prime)
 
 	results = {"mensaje":"Se borraron registros y bloom_filter"}
 
