@@ -22,12 +22,13 @@ hloglog = hyperloglog(5,salts)
 pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos', connect_timeout=8)
 cur = pos_connection.cursor()
 cur.execute("TRUNCATE checkin")
+cur.execute("TRUNCATE checkin_bloom")
 cur.execute("TRUNCATE flujo")
 pos_connection.commit()
 cur.close()
 
-@app.route('/insert_elements/',methods=['POST'])
-def insert_elements():
+@app.route('/insert_elements_bloom/',methods=['POST'])
+def insert_elements_bloom_filter():
 
 	records = request.data.get('records')
 	#counter
@@ -35,7 +36,23 @@ def insert_elements():
 	
 	for visit in records:	
 		#revisa si esta en el filtro, si no, insertalo.
-		inserted_count += filtro_bloom.check_element(visit)
+		esta_en_filtro = filtro_bloom.check_element(visit)
+		
+
+		if esta_en_filtro == 0:
+
+			global pos_connection
+			#Si la conexión murió, vuelve a abrirla.
+			try:
+				cur = pos_connection.cursor()
+			except:
+			 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+			 	cur = pos_connection.cursor()
+
+			cur.execute("insert into checkin_bloom (checkin) values (%s)",(record,))
+			cur.close()
+			pos_connection.commit()
+			inserted_count +=1
 
 	# #reportar cuantas existe, cuantas no segun base.
 	# #saca fp
@@ -71,7 +88,6 @@ def insert_elements():
 
 		'macs_existentes_filtro': visitas_existentes_filtro,
 		'nuevas_macs_filtro' : nuevas_visitas_filtro,
-		'visitas_existentes_base' : visitas_existentes_base
 
 	}
 	

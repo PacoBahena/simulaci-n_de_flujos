@@ -56,7 +56,8 @@ class bloom_filter:
 		"""
 		Checa, dado un elemento, 
 		si este ya existe, si no, lo inserta.
-		"""#generate hashes
+		"""
+		#generate hashes
 		hashes = hash_generator(element,self.salts,self.big_prime)
 		if self.bits_vector[hashes].sum() == len(hashes):
 		    #print('elemento {} ya esta en la lista'.format(element))
