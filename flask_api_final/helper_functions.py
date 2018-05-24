@@ -52,7 +52,7 @@ class bloom_filter:
 	    self.big_prime = big_prime
 	    self.bits_vector = np.zeros(self.big_prime)
 
-	def check_element(self,element):
+	def new_observation(self,element):
 		"""
 		Checa, dado un elemento, 
 		si este ya existe, si no, lo inserta.

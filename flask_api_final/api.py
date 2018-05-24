@@ -32,19 +32,18 @@ def insert_elements_bloom_filter():
 
 	records = request.data.get('records')
 	#counter
-	inserted_count = 0 
-	visitas_existentes_filtro = 0
+	nuevas_visitas = 0 
+	visitas_existentes = 0
 
 	global pos_connection
 
 	for visit in records:	
 		#revisa si esta en el filtro, si no, insertalo.
-		esta_en_filtro = filtro_bloom.check_element(visit)
+		es_nuevo = filtro_bloom.new_observation(visit)
 		
-		print(esta_en_filtro)
-		if esta_en_filtro == 0:
-
-			
+		
+		if es_nuevo == 1:
+	
 			#Si la conexión murió, vuelve a abrirla.
 			try:
 				cur = pos_connection.cursor()
@@ -55,20 +54,18 @@ def insert_elements_bloom_filter():
 			cur.execute("insert into checkin_bloom (checkin) values (%s)",(visit,))
 			cur.close()
 			pos_connection.commit()
-			inserted_count +=1
+			nuevas_visitas +=1
 		else:
-			visitas_existentes_filtro +=1
+			visitas_existentes +=1
 
 	# #reportar cuantas existe, cuantas no segun base.
 	# #saca fp
-
-	nuevas_visitas_filtro = inserted_count
 	##Cuantas ya existían.
 	
 	results = {
 
-		'macs_existentes_filtro': visitas_existentes_filtro,
-		'nuevas_visitas_filtro' : nuevas_visitas_filtro,
+		'visitas_existentes': visitas_existentes,
+		'nuevas_visitas' : nuevas_visitas,
 
 	}
 	
@@ -108,8 +105,9 @@ def insert_elements_on_db():
 	
 	results = {
 
-		'visitas_existentes_base' : visitas_existentes_base,
-		'nuevas_visitas_base': inserted_base
+		'nuevas_visitas_base': inserted_base,
+		'visitas_existentes_base' : visitas_existentes_base
+		
 
 	}
 	
