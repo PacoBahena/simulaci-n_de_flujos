@@ -9,7 +9,7 @@ app = FlaskAPI(__name__)
 
 ###
 #genera salts
-salts = hash_family(k=sys.argv[1])
+salts = hash_family(k=10)
 big_prime = 526717
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)

@@ -1,0 +1,19 @@
+
+[2018-05-24 12:47:11 -0500] [7097] [INFO] Starting gunicorn 19.8.1
+[2018-05-24 12:47:11 -0500] [7097] [ERROR] Connection in use: ('0.0.0.0', 3000)
+[2018-05-24 12:47:11 -0500] [7097] [ERROR] Retrying in 1 second.
+[2018-05-24 12:47:12 -0500] [7097] [ERROR] Connection in use: ('0.0.0.0', 3000)
+[2018-05-24 12:47:12 -0500] [7097] [ERROR] Retrying in 1 second.
+[2018-05-24 12:47:13 -0500] [7097] [ERROR] Connection in use: ('0.0.0.0', 3000)
+[2018-05-24 12:47:13 -0500] [7097] [ERROR] Retrying in 1 second.
+[2018-05-24 12:47:14 -0500] [7097] [ERROR] Connection in use: ('0.0.0.0', 3000)
+[2018-05-24 12:47:14 -0500] [7097] [ERROR] Retrying in 1 second.
+[2018-05-24 12:47:15 -0500] [7097] [ERROR] Connection in use: ('0.0.0.0', 3000)
+[2018-05-24 12:47:15 -0500] [7097] [ERROR] Retrying in 1 second.
+[2018-05-24 12:47:16 -0500] [7097] [ERROR] Can't connect to ('0.0.0.0', 3000)
+[2018-05-24 12:47:55 -0500] [7136] [INFO] Starting gunicorn 19.8.1
+[2018-05-24 12:47:55 -0500] [7136] [INFO] Listening at: http://0.0.0.0:3000 (7136)
+[2018-05-24 12:47:55 -0500] [7136] [INFO] Using worker: sync
+[2018-05-24 12:47:55 -0500] [7147] [INFO] Booting worker with pid: 7147
+[2018-05-24 12:47:55 -0500] [7148] [INFO] Booting worker with pid: 7148
+[2018-05-24 12:47:55 -0500] [7149] [INFO] Booting worker with pid: 7149
