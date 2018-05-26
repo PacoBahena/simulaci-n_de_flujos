@@ -79,15 +79,6 @@ def insert_elements_bloom_filter():
 		if es_nuevo == 1:
 	
 			#Si la conexión murió, vuelve a abrirla.
-			try:
-				cur = pos_connection.cursor()
-			except:
-			 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
-			 	cur = pos_connection.cursor()
-
-			cur.execute("insert into checkin_bloom (checkin) values (%s)",(visit,))
-			cur.close()
-			pos_connection.commit()
 			nuevas_visitas +=1
 		else:
 			visitas_existentes +=1
@@ -156,7 +147,6 @@ def insert_elements_on_db():
 	 	cur = pos_connection.cursor()
 	
 	ts0 =time()
-
 	#inserta los records
 	for record in records:
 		try:
@@ -166,7 +156,6 @@ def insert_elements_on_db():
 			visitas_existentes_base +=1
 		
 	cur.close()
-
 	ts1 =time()
 
 	tiempo = str(ts1 - ts0)
