@@ -248,6 +248,37 @@ def check_is_in_filter():
 
 	return results
 
+@app.route('/is_in_db/',methods=['POST'])
+def check_is_in_db():
+
+	records = request.data.get('records')
+	estan = 0
+
+	global pos_connection
+
+	try:
+		cur = pos_connection.cursor()
+	except:
+	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+	 	cur = pos_connection.cursor()
+
+	for record in records:
+
+		cur.execute("""select checkin from checkin where checkin=%s""",(record[0],))
+		if cur.fetchone()[0] is None:
+			estan += 0
+		else:
+			estan += 1
+
+
+	results = {
+
+		'Elementos_en_la_petición_ya_en_la_db': estan
+
+	}
+
+	return results
+
 
 @app.route('/check_unique/',methods=['POST'])
 def check_unique():

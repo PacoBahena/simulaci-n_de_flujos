@@ -107,4 +107,20 @@ class hyperloglog:
         count = 1/((1/2**mx.groupby('cubeta').tailmax.agg(lambda x: x.max()+1)).mean()) * len(mx.cubeta.unique())
         return count
 
+class cubeta:
+    
+    def __init__(self):
+        self.values = []
+    def add_element(self,record):
+        self.values.append(record)
+        
 
+def hash_bucket(elemento,modulo_primo=10):
+    """
+    Regresa la cubeta, de acuerdo al hash generado por el elemento.
+    """
+    elemento = elemento.encode() 
+    
+    hashes = int(hashlib.sha256(elemento).hexdigest(),16) % modulo_primo
+    
+    return hashes
