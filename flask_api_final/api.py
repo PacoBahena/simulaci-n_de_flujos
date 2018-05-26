@@ -4,6 +4,7 @@ from helper_functions import *
 import psycopg2 as pg
 import sys
 from time import time
+import pandas as pd
 
 
 app = FlaskAPI(__name__)
@@ -102,12 +103,36 @@ def insert_elements_bloom_filter():
 
 		'visitas_existentes': visitas_existentes,
 		'nuevas_visitas' : nuevas_visitas,
-		'tiempo_en_segundos' : tiempo,
-		'cuenta_insertados_bloom': unique_inserts_counter
+		'tiempo_en_segundos' : tiempo
 
 	}
 	
 	return results
+
+@app.route('/check_statistics_bloom_db/')
+def check_number_insertions():
+
+	global unique_inserts_counter
+	global pos_connection
+	
+	try:
+		cur = pos_connection.cursor()
+	except:
+		pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+		cur = pos_connection.cursor()
+
+	cur.execute("""select count(*) from checkin""")
+	cuenta = cur.fetchone()[0]
+
+	results = {
+
+		'elementos_insertados_en_bloom': unique_inserts_counter,
+		'elemntos_en_db': cuenta
+
+	}
+	
+
+	return
 
 
 @app.route('/insert_elements_db/',methods=['POST'])
@@ -155,50 +180,26 @@ def insert_elements_on_db():
 	
 	return results
 
-@app.route('/is_in_db/',methods=['POST'])
-def are_elements_on_db():
+# @app.route('/is_in_db/',methods=['POST'])
+# def are_elements_on_db():
 
-	records = request.data.get('records')
+# 	records = request.data.get('records')
 	
-	##Cuantas ya existían.
-	##### real database stats.
+# 	##Cuantas ya existían.
+# 	##### real database stats.
 	
-	inserted_base = 0
-	visitas_existentes_base = 0
+# 	inserted_base = 0
+# 	visitas_existentes_base = 0
 
-	global pos_connection
-	#Si la conexión murió, vuelve a abrirla.
-	try:
-		cur = pos_connection.cursor()
-	except:
-	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
-	 	pos_connection.set_session(autocommit=True)
-	 	cur = pos_connection.cursor()
+# 	global pos_connection
+# 	#Si la conexión murió, vuelve a abrirla.
+# 	try:
+# 		cur = pos_connection.cursor()
+# 	except:
+# 	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+# 	 	pos_connection.set_session(autocommit=True)
+# 	 	cur = pos_connection.cursor()
 	
-	ts0 =time()
-
-	#inserta los records
-	for record in records:
-		try:
-			cur.execute("insert into checkin (checkin) values (%s)",(record,))
-			inserted_base += 1
-		except pg.IntegrityError:
-			visitas_existentes_base +=1
-		
-	cur.close()
-
-	ts1 =time()
-
-	tiempo = str(ts1 - ts0)
-	
-	results = {
-
-		'nuevas_visitas_base': inserted_base,
-		'visitas_existentes_base' : visitas_existentes_base,
-		'tiempo_en_segundos':tiempo
-	}
-	
-	return results
 
 @app.route('/insert_elements_db_window/',methods=['POST'])
 def insert_elements_on_window_db():
