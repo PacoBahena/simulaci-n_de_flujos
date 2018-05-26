@@ -174,25 +174,7 @@ def insert_elements_on_db():
 	
 	return results
 
-# @app.route('/is_in_db/',methods=['POST'])
-# def are_elements_on_db():
 
-# 	records = request.data.get('records')
-	
-# 	##Cuantas ya existían.
-# 	##### real database stats.
-	
-# 	inserted_base = 0
-# 	visitas_existentes_base = 0
-
-# 	global pos_connection
-# 	#Si la conexión murió, vuelve a abrirla.
-# 	try:
-# 		cur = pos_connection.cursor()
-# 	except:
-# 	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
-# 	 	pos_connection.set_session(autocommit=True)
-# 	 	cur = pos_connection.cursor()
 	
 
 @app.route('/insert_elements_db_window/',methods=['POST'])
