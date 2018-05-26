@@ -90,10 +90,6 @@ def insert_elements_bloom_filter():
 		else:
 			visitas_existentes +=1
 
-	# #reportar cuantas existe, cuantas no segun base.
-	# #saca fp
-	##Cuantas ya existían.
-
 	ts1 =time()
 	tiempo = str(ts1 - ts0)
 	
@@ -119,12 +115,8 @@ def check_number_bloom_db():
 		pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
 		cur = pos_connection.cursor()
 
-	print('holi')
-
 	cur.execute("""select count(*) from checkin""")
 	cuenta = cur.fetchone()[0]
-
-	print('holi')
 
 	results = {
 
@@ -221,6 +213,41 @@ def insert_elements_on_window_db():
 	results = {
 
 		"hola" : "Has insertado {}".format(insertados)
+	}
+	
+	return results
+
+@app.route('/check_window_sample/',methods=['GET'])
+def check_time_window_sample_db():
+
+
+	global pos_connection
+	global canasta
+	#Si la conexión murió, vuelve a abrirla.
+	try:
+		cur = pos_connection.cursor()
+	except:
+	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+	 	cur = pos_connection.cursor()
+	
+	query = """select AVG(time) as duracion from
+	 			(select mac,avg(tiempo) as time from window_flujo groupby mac) as t"""
+
+	cur.execute(q)
+
+	duracion_promedio = cur.fetchone()[0]
+		
+	cur.close()
+
+	df_canasta = pd.DataFrame(canasta.values)
+	df_canasta.columns = ['mac','tiempo']
+	tabla_prom = df_canasta.groupby('mac')['tiempo'].mean()
+	duracion_promedio_canasta = tabla_prom.tiempo.mean()
+	
+	results = {
+
+		"db_duracion_promedio" : duracion_promedio,
+		"canasta_duracion_promedio" : duracion_promedio_canasta
 	}
 	
 	return results
