@@ -4,7 +4,6 @@ from helper_functions import *
 import psycopg2 as pg
 import sys
 from time import time
-import pandas as pd
 
 
 app = FlaskAPI(__name__)
@@ -15,7 +14,7 @@ salts = hash_family(k=20)
 big_prime = 1042043
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)
-#filtro_bloom_empleados = bloom_filter(salts,big_prime)
+filtro_bloom_empleados = bloom_filter(salts,big_prime)
 #genera hyperloglog
 hloglog = hyperloglog(5,salts)
 ###
@@ -72,9 +71,13 @@ def insert_elements_bloom_filter():
 	for visit in records:	
 		#revisa si esta en el filtro, si no, insertalo.
 		# Si es nuevo es igual a 0,
-		es_nuevo = filtro_bloom.new_observation(visit)
-		unique_inserts_counter += es_nuevo
+
+		es_empleado = filtro_bloom_empleados.is_in_filter(visit)
 		
+		if es_empleado == 0:
+
+			es_nuevo = filtro_bloom.new_observation(visit)
+			unique_inserts_counter += es_nuevo		
 		
 		if es_nuevo == 1:
 	
