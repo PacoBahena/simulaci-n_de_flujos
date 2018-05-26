@@ -18,7 +18,7 @@ filtro_bloom_empleados = bloom_filter(salts,big_prime)
 
 canasta = cubeta()
 #genera hyperloglog
-hloglog = hyperloglog(5,salts)
+hloglog = hyperloglog(5)
 ###
 
 unique_inserts_counter = 0
