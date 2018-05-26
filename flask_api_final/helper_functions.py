@@ -32,7 +32,7 @@ def hash_generator(elemento,salts,modulo_primo=526717,hyperloglog=False):
     
     if hyperloglog == True:
     	modulo_primo = 10000139
-    	hashes = format(int(blake2b(elemento,salt=salts[0]).hexdigest()[:10],16) % modulo_primo,'023b') 
+    	hashes = format(int(blake2b(elemento,salt=salts[0]).hexdigest(),16) % modulo_primo,'023b') 
     else:
     	hashes = [int(blake2b(elemento,salt=salt).hexdigest()[:10],16) % modulo_primo\
 	    for salt in salts]
