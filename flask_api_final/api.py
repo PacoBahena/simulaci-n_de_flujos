@@ -15,6 +15,8 @@ big_prime = 1042043
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)
 filtro_bloom_empleados = bloom_filter(salts,big_prime)
+
+canasta = cubeta()
 #genera hyperloglog
 hloglog = hyperloglog(5,salts)
 ###
@@ -126,7 +128,7 @@ def check_number_insertions():
 	}
 	
 
-	return
+	return results
 
 
 @app.route('/insert_elements_db/',methods=['POST'])
@@ -204,6 +206,7 @@ def insert_elements_on_window_db():
 	insertados = 0
 
 	global pos_connection
+	global canasta
 	#Si la conexión murió, vuelve a abrirla.
 	try:
 		cur = pos_connection.cursor()
@@ -214,11 +217,18 @@ def insert_elements_on_window_db():
 	#inserta los records
 	for record in records:
 	
-		cur.execute("insert into window_flujo (nodo,pot) values (%s,%s)",(record[0],record[1]))
+		cur.execute("insert into window_flujo (mac,tiempo) values (%s,%s)",(record[0],record[1]))
 		pos_connection.commit()
 		insertados +=1
 		
 	cur.close()
+
+
+	###si cae en cubeta 1, guardar record.
+
+	if hash_bucket(record[0]) == 1:
+
+		canasta.add_element(record)
 	
 	results = {
 
@@ -301,7 +311,6 @@ def check_unique():
 
 	cur.execute("select count(distinct(registro)) from flujo")
 	unicas_base = cur.fetchone()[0]
-	#
 	unicas_hll = hloglog.count()
 
 	results = {
