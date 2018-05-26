@@ -193,7 +193,7 @@ def check_is_in_filter():
 
 	for record in records:
 
-		esta = filtro_bloom_empleados.is_in_filter(record[1])
+		esta = filtro_bloom.is_in_filter(record[0])
 		estan += esta
 
 	results = {
