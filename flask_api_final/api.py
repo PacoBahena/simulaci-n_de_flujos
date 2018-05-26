@@ -105,7 +105,7 @@ def insert_elements_bloom_filter():
 	
 	return results
 
-@app.route('/check_bloom_db/',methods=['GET'])
+@app.route('/check_bloom_db/',methods=['POST'])
 def check_number_bloom_db():
 
 	global unique_inserts_counter
