@@ -14,6 +14,7 @@ salts = hash_family(k=20)
 big_prime = 1042043
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)
+filtro_bloom_empleados = bloom_filter(salts,big_prime)
 #genera hyperloglog
 hloglog = hyperloglog(5,salts)
 ###
@@ -29,7 +30,7 @@ pos_connection.commit()
 cur.close()
 
 @app.route('/limpia_db_bloom/<int:num_hashes>/<int:big_prime>')
-def clean_db(num_hashes):
+def clean_db(num_hashes,big_prime):
 
 	pg_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos', connect_timeout=8)
 	cur = pg_connection.cursor()
@@ -41,13 +42,13 @@ def clean_db(num_hashes):
 	pg_connection.close()
 
 	global filtro_bloom
-	global big_prime
 
-	salts = hash_family(k=int(num_hashes))
+	salts = hash_family(k=num_hashes)
 	#genera vector	 de bits 
 	filtro_bloom = bloom_filter(salts,big_prime)
+	filtro_bloom_empleados = bloom_filter(salts,big_prime)
 
-	results = {"mensaje":"Se borraron registros y bloom_filter"}
+	results = {"mensaje":"Se borraron registros y bloom_filter y bloom_filter_empleados"}
 
 	return results 
 
@@ -180,6 +181,27 @@ def insert_elements_on_window_db():
 		"hola" : "Has insertado {}".format(insertados)
 	}
 	
+	return results
+
+
+@app.route('/is_in_filter/',methods=['POST'])
+def check_is_in_filter():
+
+	records = request.data.get('records')
+
+	estan = 0
+
+	for record in records:
+
+		esta = filtro_bloom_empleados.is_in_filter(record[1])
+		estan += esta
+
+	results = {
+
+		'Elementos_en_la_petición_ya_en_filtro': estan
+
+	}
+
 	return results
 
 

@@ -68,6 +68,19 @@ class bloom_filter:
 		    self.bits_vector[hashes] = 1
 		    return 1
         
+    	def is_in_filter(self,element):
+		"""
+		Checa, dado un elemento, 
+		si este ya existe, si no, lo inserta.
+		"""
+		#generate hashes
+		hashes = hash_generator(element,self.salts,self.big_prime)
+		if self.bits_vector[hashes].sum() == len(hashes):
+		    #print('elemento {} ya esta en la lista'.format(element))
+		    return 1
+		else:
+		    #print('elemento {} no esta en la lista'.format(element))
+		    return 0
     
 
 class hyperloglog:
