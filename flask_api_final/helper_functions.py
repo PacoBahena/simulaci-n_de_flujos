@@ -34,7 +34,7 @@ def hash_generator(elemento,salts,modulo_primo=526717,hyperloglog=False):
     	modulo_primo = 10000139
     	hashes = format(int(blake2b(elemento,salt=salts[0]).hexdigest(),16) % modulo_primo,'023b') 
     else:
-    	hashes = [int(blake2b(elemento,salt=salt).hexdigest()[:10],16) % modulo_primo\
+    	hashes = [int(blake2b(elemento,salt=salt).hexdigest(),16) % modulo_primo\
 	    for salt in salts]
     
     return hashes
@@ -106,3 +106,13 @@ class hyperloglog:
         #De esa, sacó el promedio armonico.
         count = 1/((1/2**mx.groupby('cubeta').tailmax.agg(lambda x: x.max()+1)).mean()) * len(mx.cubeta.unique())
         return count
+
+
+class cubeta:
+
+	def __init__(self):
+
+		self.records = []
+
+
+	def 
