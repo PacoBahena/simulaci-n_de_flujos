@@ -47,11 +47,13 @@ def clean_db(num_hashes,big_prime):
 	pg_connection.close()
 
 	global filtro_bloom
+	global unique_inserts_counter
 
 	salts = hash_family(k=num_hashes)
 	#genera vector	 de bits 
 	filtro_bloom = bloom_filter(salts,big_prime)
 	filtro_bloom_empleados = bloom_filter(salts,big_prime)
+	unique_inserts_counter = 0
 
 	results = {"mensaje":"Se borraron registros y bloom_filter y bloom_filter_empleados"}
 
@@ -105,7 +107,7 @@ def insert_elements_bloom_filter():
 	
 	return results
 
-@app.route('/check_bloom_db/',methods=['POST'])
+@app.route('/check_bloom_db/',methods=['GET'])
 def check_number_bloom_db():
 
 	global unique_inserts_counter
@@ -117,13 +119,17 @@ def check_number_bloom_db():
 		pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
 		cur = pos_connection.cursor()
 
+	print('holi')
+
 	cur.execute("""select count(*) from checkin""")
 	cuenta = cur.fetchone()[0]
+
+	print('holi')
 
 	results = {
 
 		'elementos_insertados_en_bloom': unique_inserts_counter,
-		'elemntos_en_db': cuenta
+		'elementos_en_db': cuenta
 
 	}
 	
