@@ -108,11 +108,3 @@ class hyperloglog:
         return count
 
 
-class cubeta:
-
-	def __init__(self):
-
-		self.records = []
-
-
-	def 
