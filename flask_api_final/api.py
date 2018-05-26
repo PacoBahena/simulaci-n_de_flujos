@@ -14,14 +14,17 @@ salts = hash_family(k=20)
 big_prime = 1042043
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)
-filtro_bloom_empleados = bloom_filter(salts,big_prime)
+#filtro_bloom_empleados = bloom_filter(salts,big_prime)
 #genera hyperloglog
 hloglog = hyperloglog(5,salts)
 ###
 
+unique_inserts_counter = 0
+
 ###Cońexión a postgres 
 #Borra lo que tenga.
 pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos', connect_timeout=8)
+pos_connection.set_session(autocommit=True)
 cur = pos_connection.cursor()
 cur.execute("TRUNCATE checkin")
 cur.execute("TRUNCATE checkin_bloom")
@@ -61,12 +64,15 @@ def insert_elements_bloom_filter():
 	visitas_existentes = 0
 
 	global pos_connection
+	global unique_inserts_counter
 
 	ts0 =time()
 
 	for visit in records:	
 		#revisa si esta en el filtro, si no, insertalo.
+		# Si es nuevo es igual a 0,
 		es_nuevo = filtro_bloom.new_observation(visit)
+		unique_inserts_counter += es_nuevo
 		
 		
 		if es_nuevo == 1:
@@ -96,7 +102,8 @@ def insert_elements_bloom_filter():
 
 		'visitas_existentes': visitas_existentes,
 		'nuevas_visitas' : nuevas_visitas,
-		'tiempo_en_segundos' : tiempo
+		'tiempo_en_segundos' : tiempo,
+		'cuenta_insertados_bloom': unique_inserts_counter
 
 	}
 	
@@ -120,6 +127,7 @@ def insert_elements_on_db():
 		cur = pos_connection.cursor()
 	except:
 	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+	 	pos_connection.set_session(autocommit=True)
 	 	cur = pos_connection.cursor()
 	
 	ts0 =time()
@@ -131,8 +139,51 @@ def insert_elements_on_db():
 			inserted_base += 1
 		except pg.IntegrityError:
 			visitas_existentes_base +=1
+		
+	cur.close()
 
-		pos_connection.commit()
+	ts1 =time()
+
+	tiempo = str(ts1 - ts0)
+	
+	results = {
+
+		'nuevas_visitas_base': inserted_base,
+		'visitas_existentes_base' : visitas_existentes_base,
+		'tiempo_en_segundos':tiempo
+	}
+	
+	return results
+
+@app.route('/is_in_db/',methods=['POST'])
+def are_elements_on_db():
+
+	records = request.data.get('records')
+	
+	##Cuantas ya existían.
+	##### real database stats.
+	
+	inserted_base = 0
+	visitas_existentes_base = 0
+
+	global pos_connection
+	#Si la conexión murió, vuelve a abrirla.
+	try:
+		cur = pos_connection.cursor()
+	except:
+	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+	 	pos_connection.set_session(autocommit=True)
+	 	cur = pos_connection.cursor()
+	
+	ts0 =time()
+
+	#inserta los records
+	for record in records:
+		try:
+			cur.execute("insert into checkin (checkin) values (%s)",(record,))
+			inserted_base += 1
+		except pg.IntegrityError:
+			visitas_existentes_base +=1
 		
 	cur.close()
 
