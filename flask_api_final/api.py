@@ -90,18 +90,19 @@ def insert_elements_bloom_filter():
 			es_nuevo = filtro_bloom.new_observation(visit)
 			unique_inserts_counter += es_nuevo	
 
-			cur.execute("insert into checkin_bloom (checkin) values (%s)",(visit,))
+			
 		
 		if es_nuevo == 1:
 	
 			#Si la conexión murió, vuelve a abrirla.
+			cur.execute("insert into checkin_bloom (checkin) values (%s)",(visit,))
 			nuevas_visitas +=1
 		else:
 			visitas_existentes +=1
 
 	
 	cur.close()
-	
+
 	ts1 =time()
 	tiempo = str(ts1 - ts0)
 	
