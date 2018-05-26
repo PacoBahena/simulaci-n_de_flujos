@@ -70,6 +70,13 @@ def insert_elements_bloom_filter():
 	global pos_connection
 	global unique_inserts_counter
 
+	try:
+		cur = pos_connection.cursor()
+	except:
+	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+	 	pos_connection.set_session(autocommit=True)
+	 	cur = pos_connection.cursor()
+
 	ts0 =time()
 
 	for visit in records:	
@@ -81,7 +88,9 @@ def insert_elements_bloom_filter():
 		if es_empleado == 0:
 
 			es_nuevo = filtro_bloom.new_observation(visit)
-			unique_inserts_counter += es_nuevo		
+			unique_inserts_counter += es_nuevo	
+
+			cur.execute("insert into checkin_bloom (checkin) values (%s)",(visit,))
 		
 		if es_nuevo == 1:
 	
@@ -90,6 +99,9 @@ def insert_elements_bloom_filter():
 		else:
 			visitas_existentes +=1
 
+	
+	cur.close()
+	
 	ts1 =time()
 	tiempo = str(ts1 - ts0)
 	
