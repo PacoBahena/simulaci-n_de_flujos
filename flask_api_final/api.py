@@ -105,8 +105,8 @@ def insert_elements_bloom_filter():
 	
 	return results
 
-@app.route('/check_statistics_bloom_db/',methods=['GET'])
-def check_number_insertions():
+@app.route('/check_bloom_db/',methods=['GET'])
+def check_number_bloom_db():
 
 	global unique_inserts_counter
 	global pos_connection
