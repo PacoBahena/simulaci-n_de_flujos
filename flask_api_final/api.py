@@ -233,18 +233,19 @@ def insert_elements_on_window_db():
 		cur.execute("insert into window_flujo (mac,ts) values (%s,%s)",(record[0],record[1]))
 		pos_connection.commit()
 		insertados +=1
+
+		cubetita = hash_bucket(record[0])
+		print(cubetita)
+		print(type(cubetita))
+	
+		if  cubetita == 1:
+			canasta.add_element(record)
 		
 	cur.close()
 
 
 	###si cae en cubeta 1, guardar record.
-	cubetita = hash_bucket(record[0])
-	print(cubetita)
-	print(type(cubetita))
-	
-	if  cubetita == 1:
 
-		canasta.add_element(record)
 	
 	results = {
 
