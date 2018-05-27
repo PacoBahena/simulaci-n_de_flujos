@@ -238,8 +238,11 @@ def insert_elements_on_window_db():
 
 
 	###si cae en cubeta 1, guardar record.
-
-	if hash_bucket(record[0]) == 1:
+	cubetita = hash_bucket(record[0])
+	print(cubetita)
+	print(type(cubetita))
+	
+	if  cubetita == 1:
 
 		canasta.add_element(record)
 	
