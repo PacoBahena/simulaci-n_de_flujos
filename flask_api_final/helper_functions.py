@@ -2,6 +2,7 @@ import string
 from random import choice,randint,seed
 import numpy as np
 from pyblake2 import blake2b
+import hashlib
 
 def hash_family(semilla=12345,k=100):
 	"""

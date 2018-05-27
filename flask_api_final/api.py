@@ -88,12 +88,10 @@ def insert_elements_bloom_filter():
 		if es_empleado == 0:
 
 			es_nuevo = filtro_bloom.new_observation(visit)
-			unique_inserts_counter += es_nuevo	
-
-			
+			unique_inserts_counter += es_nuevo		
 		
 		if es_nuevo == 1:
-	
+
 			#Si la conexión murió, vuelve a abrirla.
 			cur.execute("insert into checkin_bloom (checkin) values (%s)",(visit,))
 			nuevas_visitas +=1
@@ -273,14 +271,21 @@ def check_is_in_filter():
 
 	estan = 0
 
+	ts0 =time()
+
 	for record in records:
 
 		esta = filtro_bloom.is_in_filter(record[0])
 		estan += esta
 
+	ts1 =time()
+
+	tiempo = str(ts1 - ts0)
+
 	results = {
 
-		'Elementos_en_la_petición_ya_en_filtro': estan
+		'Elementos_en_la_petición_ya_en_filtro': estan,
+		'tiempo_en_segundos' : tiempo
 
 	}
 
