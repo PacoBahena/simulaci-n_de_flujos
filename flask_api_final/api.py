@@ -274,7 +274,12 @@ def check_time_window_sample_db():
 	duracion_promedio = cur.fetchone()[0]
 	cur.close()
 	
+	print(canasta.values)
 	df_canasta = pd.DataFrame(canasta.values)
+	print(df_canasta.shape)
+	if df_canasta.empty:
+		results = {"mensaje":"canasta esta vacía."}
+		return results
 	df_canasta.columns = ['mac','tiempo']
 	tabla_prom_max = df_canasta.groupby('mac')['tiempo'].max().reset_index()
 	tabla_prom_max.columns = ['mac_1','first']
@@ -286,12 +291,12 @@ def check_time_window_sample_db():
 	tabla_prom = tabla.groupby('mac_1')['duracion'].mean().reset_index()
 	duracion_promedio_canasta = int(tabla_prom.duracion.mean())
 
-	# print('holi2')
 	
 	results = {
 
 		"db_duracion_promedio" : int(duracion_promedio),
-		"canasta_duracion_promedio" : duracion_promedio_canasta
+		"canasta_duracion_promedio" : duracion_promedio_canasta,
+		"observaciones_en_canasta": df_canasta.shape[0]
 	}
 	
 	return results
