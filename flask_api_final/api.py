@@ -4,6 +4,7 @@ from helper_functions import *
 import psycopg2 as pg
 import sys
 from time import time
+import pandas as pd
 
 
 app = FlaskAPI(__name__)
@@ -235,35 +236,36 @@ def check_time_window_sample_db():
 	global pos_connection
 	global canasta
 	#Si la conexión murió, vuelve a abrirla.
-	try:
-		cur = pos_connection.cursor()
-	except:
-	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
-	 	cur = pos_connection.cursor()
+	# try:
+	# 	cur = pos_connection.cursor()
+	# except:
+	#  	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
+	cur = pos_connection.cursor()
 	
 	query = """select AVG(duracion) from (select t.mac,t.first - t.last as duracion from
-	 			(select mac,MAX(ts) as first,MIN(ts) as last from window_flujo groupby mac) as t) as e"""
+	 			(select mac,MAX(ts) as first,MIN(ts) as last from window_flujo group by mac) as t) as e"""
 
 	cur.execute(query)
-
 	duracion_promedio = cur.fetchone()[0]
-		
 	cur.close()
-
+	
 	df_canasta = pd.DataFrame(canasta.values)
 	df_canasta.columns = ['mac','tiempo']
 	tabla_prom_max = df_canasta.groupby('mac')['tiempo'].max().reset_index()
 	tabla_prom_max.columns = ['mac_1','first']
 	tabla_prom_min = df_canasta.groupby('mac')['tiempo'].min().reset_index()
-	tabla_prom_max.columns = ['mac_2','last']
-	tabla = tabla_prom_max.merge(tabla_prom_min,how='inner',left_on='mac_1',right_on='mac_2')[['mac_1','first','last']]
-	tabla['duracion'] = tabla.first - tabla.last
+	tabla_prom_min.columns = ['mac_2','last']
+	tabla = tabla_prom_max.merge(tabla_prom_min,how='inner',left_on='mac_1',right_on='mac_2')
+
+	tabla['duracion'] = tabla['last'] - tabla['first']
 	tabla_prom = tabla.groupby('mac_1')['duracion'].mean().reset_index()
-	duracion_promedio_canasta = tabla_prom.duracion.mean()
+	duracion_promedio_canasta = int(tabla_prom.duracion.mean())
+
+	# print('holi2')
 	
 	results = {
 
-		"db_duracion_promedio" : duracion_promedio,
+		"db_duracion_promedio" : int(duracion_promedio),
 		"canasta_duracion_promedio" : duracion_promedio_canasta
 	}
 	
