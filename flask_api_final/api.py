@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from flask_api import FlaskAPI
 from flask import request
 from helper_functions import *
@@ -23,7 +25,7 @@ hloglog = hyperloglog(5)
 
 unique_inserts_counter = 0
 
-###Cońexión a postgres 
+###
 #Borra lo que tenga.
 pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos', connect_timeout=8)
 pos_connection.set_session(autocommit=True)
