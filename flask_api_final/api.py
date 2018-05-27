@@ -297,6 +297,8 @@ def check_is_in_db():
 	records = request.data.get('records')
 	estan = 0
 
+	ts0 =time()
+
 	global pos_connection
 
 	try:
@@ -313,10 +315,15 @@ def check_is_in_db():
 		else:
 			estan += 1
 
+	ts1 =time()
+
+	tiempo = str(ts1 - ts0)
+
 
 	results = {
 
-		'Elementos_en_la_petición_ya_en_la_db': estan
+		'Elementos_en_la_petición_ya_en_la_db': estan,
+		'tiempo_en_segundos' : tiempo
 
 	}
 
