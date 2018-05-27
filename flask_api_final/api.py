@@ -208,7 +208,7 @@ def insert_elements_on_window_db():
 	#inserta los records
 	for record in records:
 	
-		cur.execute("insert into window_flujo (mac,tiempo) values (%s,%s)",(record[0],record[1]))
+		cur.execute("insert into window_flujo (mac,ts) values (%s,%s)",(record[0],record[1]))
 		pos_connection.commit()
 		insertados +=1
 		
@@ -241,10 +241,10 @@ def check_time_window_sample_db():
 	 	pos_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos',connect_timeout=8)
 	 	cur = pos_connection.cursor()
 	
-	query = """select AVG(time) as duracion from
-	 			(select mac,avg(tiempo) as time from window_flujo groupby mac) as t"""
+	query = """select AVG(duracion) from (select t.mac,t.first - t.last as duracion from
+	 			(select mac,MAX(ts) as first,MIN(ts) as last from window_flujo groupby mac) as t) as e"""
 
-	cur.execute(q)
+	cur.execute(query)
 
 	duracion_promedio = cur.fetchone()[0]
 		
@@ -252,8 +252,14 @@ def check_time_window_sample_db():
 
 	df_canasta = pd.DataFrame(canasta.values)
 	df_canasta.columns = ['mac','tiempo']
-	tabla_prom = df_canasta.groupby('mac')['tiempo'].mean()
-	duracion_promedio_canasta = tabla_prom.tiempo.mean()
+	tabla_prom_max = df_canasta.groupby('mac')['tiempo'].max().reset_index()
+	tabla_prom_max.columns = ['mac_1','first']
+	tabla_prom_min = df_canasta.groupby('mac')['tiempo'].min().reset_index()
+	tabla_prom_max.columns = ['mac_2','last']
+	tabla = tabla_prom_max.merge(tabla_prom_min,how='inner',left_on='mac_1',right_on='mac_2')[['mac_1','first','last']]
+	tabla['duracion'] = tabla.first - tabla.last
+	tabla_prom = tabla.groupby('mac_1')['duracion'].mean().reset_index()
+	duracion_promedio_canasta = tabla_prom.duracion.mean()
 	
 	results = {
 
