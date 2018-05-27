@@ -15,7 +15,6 @@ salts = hash_family(k=20)
 big_prime = 1042043
 #genera vector	 de bits 
 filtro_bloom = bloom_filter(salts,big_prime)
-filtro_bloom_empleados = bloom_filter(salts,big_prime)
 
 canasta = cubeta()
 #genera hyperloglog
@@ -37,6 +36,9 @@ cur.close()
 
 @app.route('/limpia_db_bloom/<int:num_hashes>/<int:big_prime>')
 def clean_db(num_hashes,big_prime):
+	###
+	#Truncates tables and restarts bloom filter with <num_hashes> hashes and <big_prime> bit length.
+	###
 
 	pg_connection = pg.connect(dbname='flujo', user='usuario_flujo', host="pos1.cjp3gx7nxjsk.us-east-1.rds.amazonaws.com", password='flujos', connect_timeout=8)
 	cur = pg_connection.cursor()
@@ -62,6 +64,11 @@ def clean_db(num_hashes,big_prime):
 
 @app.route('/insert_elements_bloom/',methods=['POST'])
 def insert_elements_bloom_filter():
+	###
+	#Dado una lista de records, Checa si están o no en el filtro.
+	#Si no estan, los inserta en el filtro y en la base de datos en
+	#la tabla checkin.
+	###
 
 	records = request.data.get('records')
 	#counter
@@ -84,12 +91,8 @@ def insert_elements_bloom_filter():
 		#revisa si esta en el filtro, si no, insertalo.
 		# Si es nuevo es igual a 0,
 
-		es_empleado = filtro_bloom_empleados.is_in_filter(visit)
-		
-		if es_empleado == 0:
-
-			es_nuevo = filtro_bloom.new_observation(visit)
-			unique_inserts_counter += es_nuevo		
+		es_nuevo = filtro_bloom.new_observation(visit)
+		unique_inserts_counter += es_nuevo		
 		
 		if es_nuevo == 1:
 
@@ -117,6 +120,10 @@ def insert_elements_bloom_filter():
 
 @app.route('/check_bloom_db/',methods=['GET'])
 def check_number_bloom_db():
+	#######
+	# Regresa el numero de elementos en la tabla checkin, así como el
+	# numero de elementos que se han insertado en el bloom filter. 
+	########
 
 	global unique_inserts_counter
 	global pos_connection
@@ -143,6 +150,13 @@ def check_number_bloom_db():
 
 @app.route('/insert_elements_db/',methods=['POST'])
 def insert_elements_on_db():
+
+	#######
+	#Recibe una lista de elementos. Se insertan en la base de datos,
+	# la cual tiene una restricción de unicidad. Cada elemento se revisa si esta en 
+	# la base mediante un índice, si no está, se inserta. Si, por otroa parte, ya está,
+	# no se inserta en la tabla. 
+	########
 
 	records = request.data.get('records')
 	
@@ -190,6 +204,11 @@ def insert_elements_on_db():
 @app.route('/insert_elements_db_window/',methods=['POST'])
 def insert_elements_on_window_db():
 
+	#######
+	# Recibe una lista de elementos de la forma [teéfono, timestamp]
+	# Se guardan todas lass bservaciones en la tabla window_flujo. 
+	########
+
 	records = request.data.get('records')
 	
 	##Cuantas ya existían.
@@ -231,7 +250,11 @@ def insert_elements_on_window_db():
 
 @app.route('/check_window_sample/',methods=['GET'])
 def check_time_window_sample_db():
-
+	#######
+	# Este endpoint regresa un json informando la duración promedio por teléfono
+	# de los datos completos en la base, así como la duracicón promedio por teléfono de los 
+	# datos almacenados en una sola cubeta. 
+	########
 
 	global pos_connection
 	global canasta
@@ -274,6 +297,10 @@ def check_time_window_sample_db():
 
 @app.route('/is_in_filter/',methods=['POST'])
 def check_is_in_filter():
+	#######
+	# Regresa, dado un set de elementos, la cuenta de 
+	# todos aquellos que estan en el filtro.
+	########
 
 	records = request.data.get('records')
 
@@ -302,6 +329,10 @@ def check_is_in_filter():
 
 @app.route('/is_in_db/',methods=['POST'])
 def check_is_in_db():
+	#######
+	# Regresa, dado un set de elementos, la cuenta de 
+	# todos aquellos que estan en la base de datos.
+	########
 
 	records = request.data.get('records')
 	estan = 0
