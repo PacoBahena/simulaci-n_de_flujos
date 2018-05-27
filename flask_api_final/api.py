@@ -285,6 +285,7 @@ def check_is_in_filter():
 	results = {
 
 		'Elementos_en_la_petición_ya_en_filtro': estan,
+		'Elementos_en_la_petición_no_estan_db' : len(records) - estan,
 		'tiempo_en_segundos' : tiempo
 
 	}
@@ -323,6 +324,7 @@ def check_is_in_db():
 	results = {
 
 		'Elementos_en_la_petición_ya_en_la_db': estan,
+		'Elementos_en_la_petición_no_estan_db' : len(records) - estan,
 		'tiempo_en_segundos' : tiempo
 
 	}
