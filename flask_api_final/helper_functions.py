@@ -112,12 +112,12 @@ class cubeta:
         self.values.append(record)
         
 
-def hash_bucket(elemento,modulo_primo=10):
+def hash_bucket(elemento,num_canastas=10):
     """
     Regresa la cubeta, de acuerdo al hash generado por el elemento.
     """
     elemento = elemento.encode() 
     
-    hashes = int(hashlib.sha256(elemento).hexdigest(),16) % modulo_primo
+    hashes = int(hashlib.sha256(elemento).hexdigest(),16) % num_canastas
     
     return hashes

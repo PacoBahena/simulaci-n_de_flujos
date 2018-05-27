@@ -24,6 +24,8 @@ hloglog = hyperloglog(5)
 ###
 
 unique_inserts_counter = 0
+num_buckets = 10
+buckets_a_tomar = 5
 
 ###
 #Borra lo que tenga.
@@ -55,12 +57,33 @@ def clean_db(num_hashes,big_prime):
 	global unique_inserts_counter
 
 	salts = hash_family(k=num_hashes)
-	#genera vector	 de bits 
+	# genera vector de bits 
 	filtro_bloom = bloom_filter(salts,big_prime)
 	filtro_bloom_empleados = bloom_filter(salts,big_prime)
 	unique_inserts_counter = 0
+	canasta.values = []
 
-	results = {"mensaje":"Se borraron registros y bloom_filter y bloom_filter_empleados"}
+	results = {"mensaje":"Se borraron registros y bloom_filter y canastas"}
+
+	return results 
+
+@app.route('/clean_bucket/num_buckets/<int:buckets_a_tomar>')
+def clean_bucket(num_hashes,buckets):
+	###
+	#Sets buckets
+	###
+
+
+	global canasta
+	global num_buckets
+	global buckets_a_tomar
+	num_buckets = num_buckets
+	buckets_a_tomar = buckets_a_tomar
+
+	canasta = cubeta()
+	canasta.values = []
+
+	results = {"mensaje":"Se borro canasta y se inicializo con {}".format(num_buckets, buckets_a_tomar)}
 
 	return results 
 
@@ -220,6 +243,8 @@ def insert_elements_on_window_db():
 
 	global pos_connection
 	global canasta
+	global num_buckets
+	global buckets_a_tomar
 	#Si la conexión murió, vuelve a abrirla.
 	try:
 		cur = pos_connection.cursor()
@@ -234,11 +259,9 @@ def insert_elements_on_window_db():
 		pos_connection.commit()
 		insertados +=1
 
-		cubetita = hash_bucket(record[0])
-		print(cubetita)
-		print(type(cubetita))
+		cubetita = hash_bucket(record[0],num_buckets)
 	
-		if  cubetita == 1:
+		if  cubetita < buckets_a_tomar:
 			canasta.add_element(record)
 		
 	cur.close()
