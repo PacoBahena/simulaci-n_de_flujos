@@ -321,7 +321,7 @@ def check_is_in_filter():
 
 	for record in records:
 
-		esta = filtro_bloom.is_in_filter(record[0])
+		esta = filtro_bloom.is_in_filter(record)
 		estan += esta
 
 	ts1 =time()
